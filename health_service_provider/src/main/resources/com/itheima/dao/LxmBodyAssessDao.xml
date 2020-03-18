@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.itheima.dao.LxmBodyAssessDao">
+    <select id="findPage" parameterType="String" resultType="com.itheima.pojo.LxmRiskAssessment">
+SELECT
+	m.id,m.name,m.fileNumber,b.assessment_data,IFNULL(b.deficiency,0)+IFNULL(b.yandeficiency,0)+IFNULL(b.yindeficiency,0)+IFNULL(p.Obsession,0)+IFNULL(p.anxious,0)+IFNULL(p.Paranoia,0) num
+		FROM
+		t_member m
+		RIGHT JOIN t_body b
+		ON   m.id = b.member_id
+		LEFT JOIN  t_psychology p
+		ON	 m.id = p.member_id
+	<where>
+		<if test="value != null and value.length != 0">
+			and m.fileNumber = #{value} or m.name = #{value} or m.phoneNumber = #{value}
+		</if>
+	</where>
+ORDER BY num DESC
+    </select>
+
+	<select id="findAll" resultType="com.itheima.pojo.LxmRiskAssessment">
+		SELECT
+		m.id,m.name,m.fileNumber,b.assessment_data,IFNULL(b.deficiency,0)+IFNULL(b.yandeficiency,0)+IFNULL(b.yindeficiency,0)+IFNULL(p.Obsession,0)+IFNULL(p.anxious,0)+IFNULL(p.Paranoia,0) num
+		FROM
+		t_member m
+		RIGHT JOIN t_body b
+		ON   m.id = b.member_id
+		LEFT JOIN  t_psychology p
+		ON	 m.id = p.member_id
+	</select>
+
+	<update id="editLevel" parameterType="com.itheima.pojo.LxmEditLevel">
+UPDATE
+	t_body b,t_psychology p
+SET
+	b.deficiency = #{deficiency},b.yandeficiency = #{yandeficiency},b.yindeficiency = #{yindeficiency}
+	,p.Obsession = #{Obsession},p.anxious = #{anxious},p.Paranoia = #{Paranoia}
+WHERE
+	b.member_id = #{id}
+AND p.member_id = #{id}
+	</update>
+
+	<select id="findLevel" parameterType="int" resultType="com.itheima.pojo.LxmRiskAssessment">
+		SELECT
+		m.id,m.name,m.fileNumber,b.assessment_data,IFNULL(b.deficiency,0)+IFNULL(b.yandeficiency,0)+IFNULL(b.yindeficiency,0)+IFNULL(p.Obsession,0)+IFNULL(p.anxious,0)+IFNULL(p.Paranoia,0) num
+		FROM
+		t_member m
+		RIGHT JOIN t_body b
+		ON   m.id = b.member_id
+		LEFT JOIN  t_psychology p
+		ON	 m.id = p.member_id
+		where m.id = #{id}
+	</select>
+</mapper>

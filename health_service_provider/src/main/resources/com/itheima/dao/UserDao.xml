@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.itheima.dao.UserDao">
+    <resultMap id="userMap" type="com.itheima.pojo.User">
+        <id column="id" property="id"></id>
+        <result column="username" property="username"></result>
+        <result column="password" property="password"></result>
+    </resultMap>
+    <resultMap id="baseMap" type="com.itheima.pojo.User" extends="userMap">
+        <collection property="roles" ofType="com.itheima.pojo.Role" select="com.itheima.dao.RoleDao.findById" column="id"></collection>
+    </resultMap>
+    <select id="findByUsername" parameterType="string" resultMap="baseMap">
+        select * from t_user where username = #{username}
+    </select>
+    <!--xgw_用户管理分页查询-->
+    <select id="selectPageByCondition" parameterType="String" resultType="com.itheima.pojo.User">
+        select * from t_user
+        <if test="value != null and value.length >0">
+            where username = #{value}
+        </if>
+    </select>
+    <!--xgw_用户管理新增用户-->
+    <insert id="add" parameterType="com.itheima.pojo.User">
+        <selectKey resultType="java.lang.Integer" order="AFTER" keyProperty="id">
+            select LAST_INSERT_ID()
+        </selectKey>
+        insert into t_user(birthday,gender,username,remark,station,telephone)
+        values(#{birthday},#{gender},#{username},#{remark},#{station},#{telephone})
+    </insert>
+    <!--xgw_回显用户所对应的角色-->
+    <select id="findRoleIdByUserId" parameterType="int" resultType="int">
+        select role_id from t_user_role where user_id = #{id}
+    </select>
+    <!--xgw_根据用户id查询角色是否存在-->
+    <select id="findRoleIdCountByUserId" parameterType="int" resultType="long">
+        select count(*) from t_user_role where user_id = #{user_id}
+    </select>
+    <!--xgw_存在相应角色,删除-->
+    <delete id="deleteRoleIdAll" parameterType="int">
+        delete from t_user_role where user_id = #{user_id}
+    </delete>
+    <!--xgw_重新建立用户和角色中间表-->
+    <insert id="addUserIdAndRoleId" parameterType="map">
+        insert into t_user_role(user_id,role_id) values (#{userId},#{roleId})
+    </insert>
+</mapper>

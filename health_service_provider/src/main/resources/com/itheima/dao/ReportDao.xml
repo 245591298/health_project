@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.itheima.dao.ReportDao">
+    <select id="getMembersBeforeDate" resultType="integer" parameterType="string">
+        select count(*) from t_member where regTime &lt;= #{date}
+    </select>
+
+    <select id="getSetmealNameAndCount" resultType="map">
+        select s.name name , count(o.id) value from t_setmeal s , t_order o where s.id = o.setmeal_id group by s.name
+    </select>
+</mapper>

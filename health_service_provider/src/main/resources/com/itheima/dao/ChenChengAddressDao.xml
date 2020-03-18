@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.itheima.dao.ChenChengAddressDao">
+    <!--查询所有的体检机构-->
+    <select id="findAll" resultType="com.itheima.pojo.ChenChengAddress">
+        select * from t_address
+    </select>
+    <!--根据id查询体检机构的经纬度 -->
+    <select id="findById" parameterType="int" resultType="String">
+        select longitude from t_address where id = #{id}
+    </select>
+</mapper>

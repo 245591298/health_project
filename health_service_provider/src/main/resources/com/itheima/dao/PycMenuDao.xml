@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.itheima.dao.PycMenuDao">
+
+
+    <!--根据角色查询出menu-->
+    <select id="findMenuByUsername" resultType="com.itheima.pojo.Menu">
+select * from t_menu
+where id in
+(select menu_id from t_role_menu
+where role_id in
+ (select role_id from t_user_role where user_id=
+ (select id from t_user where username=#{_parameter})))
+    </select>
+
+
+    <!--根据条件查询出menuList-->
+    <select id="pycSelectByCondtion" resultType="com.itheima.pojo.Menu">
+        select * from t_menu
+        <where>
+            <if test="_parameter!=null and _parameter.trim()!=''">
+                name=#{_parameter} or priority=#{_parameter}
+            </if>
+        </where>
+    </select>
+
+    <!--添加菜单信息-->
+    <insert id="pycAddMenu">
+        insert into t_menu (name,linkUrl,path,priority,icon,description,parentMenuId,level)
+        values (#{name},#{linkUrl},#{path},#{priority},#{icon},#{description},#{parentMenuId},#{level})
+    </insert>
+
+    <!--查询菜单信息-->
+    <select id="pycFindById" resultType="com.itheima.pojo.Menu">
+        select * from t_menu where id=#{_parameteer}
+    </select>
+
+    <update id="pycEditMenu">
+        update t_menu
+        <set>
+            <if test="name!=null and name.trim()!=''">
+                name=#{name},
+            </if>
+            <if test="linkUrl!=null and linkUrl.trim()!=''">
+                linkUrl=#{linkUrl},
+            </if>
+            <if test="path!=null and path.trim()!=''">
+                path=#{path},
+            </if>
+            <if test="priority!=null">
+                priority=#{priority},
+            </if>
+            <if test="parentMenuId!=null">
+                parentMenuId=#{parentMenuId},
+            </if>
+            <if test="level!=null">
+                level=#{level},
+            </if>
+            <if test="description!=null and description.trim()!=''">
+                description=#{description},
+            </if>
+            <if test="icon!=null and icon.trim()!=''">
+                icon=#{icon},
+            </if>
+        </set>
+        where id=#{id}
+    </update>
+
+</mapper>

@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.itheima.dao.RoleDao">
+    <resultMap id="roleMap" type="com.itheima.pojo.Role">
+        <id column="id" property="id"></id>
+        <result column="name" property="name"></result>
+        <result column="keyword" property="keyword"></result>
+        <result column="description" property="description"></result>
+    </resultMap>
+    <resultMap id="baseMap" type="com.itheima.pojo.Role" extends="roleMap">
+        <collection property="permissions" ofType="com.itheima.pojo.Permission" select="com.itheima.dao.PermissionDao.findById" column="id"></collection>
+    </resultMap>
+    <select id="findById" parameterType="int" resultMap="baseMap">
+        select * from t_role where id in (select role_id from t_user_role where user_id = #{id})
+    </select>
+    <!--xgw_查询所有角色-->
+    <select id="findAll" resultType="com.itheima.pojo.Role">
+        select * from t_role
+    </select>
+</mapper>

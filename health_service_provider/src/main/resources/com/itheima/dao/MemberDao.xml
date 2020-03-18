@@ -1,0 +1,207 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.itheima.dao.MemberDao">
+    <select id="findByTelephone" parameterType="string" resultType="com.itheima.pojo.Member">
+        select * from t_member where phoneNumber = #{telephone}
+    </select>
+
+    <insert id="add" parameterType="com.itheima.pojo.Member">
+        <selectKey resultType="java.lang.Integer" order="AFTER" keyProperty="id">
+            SELECT LAST_INSERT_ID()
+        </selectKey>
+        insert into t_member
+        (fileNumber,name,sex,idCard,phoneNumber,regTime,password,email,birthday,remark)
+        values
+        (#{fileNumber},#{name},#{sex},#{idCard},#{phoneNumber},#{regTime},#{password},#{email},#{birthday},#{remark})
+
+    </insert>
+
+    <select id="getMembersByDate" resultType="java.lang.Integer">
+        select count(id) from t_member where regTime = #{date}
+    </select>
+
+    <select id="getMembersAfterDate" resultType="java.lang.Integer" parameterType="string">
+        select count(id) from t_member where regTime &gt;= #{date}
+    </select>
+
+    <select id="getTotalMembers" resultType="java.lang.Integer" parameterType="string">
+        select count(id) from t_member
+    </select>
+    <!--通过预约套餐外键id查询member-->
+    <select id="zs_findMemberById" parameterType="int" resultType="com.itheima.pojo.Member">
+        select * from t_member where id=#{member_id}
+    </select>
+    <!--通过预约列表id删除对应的member-->
+    <delete id="zs_deleteMemberById" parameterType="int">
+        delete from t_member where id=#{id}
+    </delete>
+    <!--xgw_健康干预分页查询-->
+    <select id="selectPageByCondition" parameterType="String" resultType="com.itheima.pojo.XgwMemberDifference">
+        SELECT m.fileNumber ,m.name mName,m.sex, i.name  iName
+        FROM t_member m , t_member_illness mi , t_illness i
+        WHERE m.`id`= mi.member_id AND mi.illness_id = i.id
+        <if test="value !=null and value != '' and value.length > 0">
+             and (m.fileNumber = #{value} or m.name = #{value} or i.name = #{value})
+        </if>
+    </select>
+<!--分页查询心理检测-->
+    <select id="zs_findByCondition" parameterType="string" resultType="com.itheima.pojo.ZS_Psychology">
+        SELECT m.fileNumber,
+        m.name,
+        p.assessment_date,
+        p.obsession,
+        p.anxious,
+        p.paranoia
+        FROM t_member m,t_psychology p
+        WHERE p.`member_id`=m.`id`
+        <if test="value!=null and value!='' and value.length>0">
+         and fileNumber=#{value } or name =#{value }
+        </if>
+    </select>
+    <!--分页查询体检-->
+    <select id="zs_findBodyByCondition" parameterType="string" resultType="com.itheima.pojo.ZS_BodyList">
+        SELECT m.fileNumber,
+        m.name,
+        b.assessment_data,
+        b.deficiency,
+        b.yandeficiency,
+        b.yindeficiency
+        FROM t_member m,t_body b
+        WHERE b.`member_id`=m.`id`
+        <if test="value!=null and value!='' and value.length>0">
+            and fileNumber=#{value } or name =#{value }
+        </if>
+    </select>
+
+    <!--查询所有会员信息-->
+    <select id="pycFindPage" resultType="com.itheima.pojo.Member">
+        select * from t_member
+        <where>
+            <if test="_parameter!=null and _parameter.trim()!=''">
+                name=#{_parameter} or idCard=#{_parameter} phoneNumber=#{_parameter}
+            </if>
+        </where>
+    </select>
+    <!--查询所有的illness-->
+    <select id="pycFindAllillness" resultType="com.itheima.pojo.PycIllness">
+        select * from t_illness
+    </select>
+    <!--建立member与illness中间关系-->
+    <insert id="pycSetMemberAndillness">
+        insert into t_member_illness (member_id,illness_id)
+         values(#{param1},#{param2})
+    </insert>
+    <!--添加t_body数据-->
+    <insert id="pycAddBodyInfo">
+        insert into t_body (assessment_data,deficiency,yandeficiency,yindeficiency,member_id)
+        values (#{assessment_data},#{deficiency},#{yandeficiency},#{yindeficiency},#{member_id})
+    </insert>
+    <!--添加t_psychology数据-->
+    <insert id="pycAddPsychologyInfo">
+        insert into t_psychology (body,assessment_date,Obsession,anxious,Paranoia,member_id)
+        values (#{body},#{assessment_date},#{obsession},#{anxious},#{paranoia},#{member_id})
+    </insert>
+    <!--根据id查询出member信息-->
+    <select id="pycFindMemberById" resultType="com.itheima.pojo.Member">
+        select * from t_member where id=#{id}
+    </select>
+    <!--查询出illnessIds通过memberId-->
+    <select id="pycFindillnessIdsByMemberId" resultType="int">
+        select illness_id  from t_member_illness where member_id=#{id}
+    </select>
+    <!--根据memberId查询出body 信息-->
+    <select id="pycFindBodyByMemberId" resultType="com.itheima.pojo.PycBody">
+        select * from t_body where member_id=#{id}
+    </select>
+    <!--根据memberId查询出psychology info-->
+    <select id="pycFindPsychologyByMember" resultMap="basePsychologyMap">
+        select * from t_psychology where member_id=#{id}
+    </select>
+
+    <!--psychology的结果集封装-->
+    <resultMap id="basePsychologyMap" type="com.itheima.pojo.PycPsychology">
+        <id column="id" property="id"></id>
+        <result column="body" property="body"></result>
+        <result column="assessment_date" property="assessment_date"></result>
+        <result column="Obsession" property="obsession"></result>
+        <result column="anxious" property="anxious"></result>
+        <result column="Paranoia" property="paranoia"></result>
+        <result column="member_id" property="member_id"></result>
+    </resultMap>
+
+    <!--更新member 信息-->
+    <update id="pycUpdateMember">
+        update t_member
+        <set>
+            <if test="fileNumber!=null and fileNumber.trim()!=''">
+                fileNumber=#{fileNumber},
+            </if>
+            <if test="name!=null and name.trim()!=''">
+                name=#{name},
+            </if>
+            <if test="sex!=null and sex.trim()!=''">
+                sex=#{sex},
+            </if>
+            <if test="idCard!=null and idCard.trim()!=''">
+                idCard=#{idCard},
+            </if>
+            <if test="phoneNumber!=null and phoneNumber.trim()!=''">
+                phoneNumber=#{phoneNumber},
+            </if>
+            <if test="remark!=null and remark.trim()!=''">
+                remark=#{remark},
+            </if>
+        </set>
+        where id=#{id}
+    </update>
+
+    <!--删除member与illness 中间关系-->
+    <delete id="pycDeleteAssociation">
+        delete from t_member_illness where member_id=#{id}
+    </delete>
+
+    <!--更新body信息-->
+    <update id="pycUpdateBody">
+        update t_body
+        <set>
+            <if test="assessment_data!=null">
+                assessment_data=#{assessment_data},
+            </if>
+            <if test="deficiency!=null">
+                deficiency=#{deficiency},
+            </if>
+            <if test="yandeficiency!=null">
+                yandeficiency=#{yandeficiency},
+            </if>
+            <if test="yindeficiency!=null">
+                yindeficiency=#{yindeficiency},
+            </if>
+        </set>
+        where member_id=#{member_id}
+    </update>
+
+    <!--更新psychology 信息-->
+    <update id="pycUpdatePsychology">
+        update t_psychology
+        <set>
+            <if test="body!=null">
+                body=#{body},
+            </if>
+            <if test="assessment_date!=null">
+                assessment_date=#{assessment_date},
+            </if>
+            <if test="obsession!=null">
+                Obsession=#{obsession},
+            </if>
+            <if test="anxious!=null">
+                anxious=#{anxious},
+            </if>
+            <if test="paranoia!=null">
+                Paranoia=#{paranoia},
+            </if>
+        </set>
+        where member_id=#{member_id}
+    </update>
+
+</mapper>
